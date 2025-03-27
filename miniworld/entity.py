@@ -136,6 +136,7 @@ class MeshEnt(Entity):
 
         # Load the mesh
         self.mesh = ObjMesh.get(mesh_name)
+        self.mesh_name = mesh_name
 
         # Get the mesh extents
         sx, sy, sz = self.mesh.max_coords

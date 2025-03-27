@@ -479,6 +479,7 @@ class MiniWorldEnv(gym.Env):
         render_mode: Optional[str] = None,
         view: str = "agent",
     ):
+        self.world_objects = []
         # Action enumeration for this environment
         self.actions = MiniWorldEnv.Actions
 

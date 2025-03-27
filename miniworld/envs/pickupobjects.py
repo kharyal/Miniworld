@@ -2,6 +2,7 @@ from gymnasium import spaces, utils
 
 from miniworld.entity import COLOR_NAMES, Ball, Box, Key
 from miniworld.miniworld import MiniWorldEnv
+from copy import deepcopy
 
 
 class PickupObjects(MiniWorldEnv, utils.EzPickle):
@@ -50,6 +51,8 @@ class PickupObjects(MiniWorldEnv, utils.EzPickle):
 
         # Reduce the action space
         self.action_space = spaces.Discrete(self.actions.pickup + 1)
+        self.world_objects = []
+
 
     def _gen_world(self):
         self.add_rect_room(
@@ -62,21 +65,38 @@ class PickupObjects(MiniWorldEnv, utils.EzPickle):
             no_ceiling=True,
         )
 
-        obj_types = [Ball, Box, Key]
-        colorlist = list(COLOR_NAMES)
+        if len(self.world_objects) == 0:
+            obj_types = [Ball, Box, Key]
+            colorlist = list(COLOR_NAMES)
 
-        for obj in range(self.num_objs):
-            obj_type = obj_types[self.np_random.choice(len(obj_types))]
-            color = colorlist[self.np_random.choice(len(colorlist))]
+            for obj in range(self.num_objs):
+                obj_type = obj_types[self.np_random.choice(len(obj_types))]
+                color = colorlist[self.np_random.choice(len(colorlist))]
 
-            if obj_type == Box:
-                self.place_entity(Box(color=color, size=0.9))
-            if obj_type == Ball:
-                self.place_entity(Ball(color=color, size=0.9))
-            if obj_type == Key:
-                self.place_entity(Key(color=color))
+                if obj_type == Box:
+                    ent = self.place_entity(Box(color=color, size=0.9))
+                if obj_type == Ball:
+                    ent = self.place_entity(Ball(color=color, size=0.9))
+                if obj_type == Key:
+                    ent = self.place_entity(Key(color=color))
 
-        self.place_agent()
+                self.world_objects.append((obj_type, color, ent.pos, ent.dir))
+
+            ent = self.place_agent()
+            self.world_objects.append(("agent", None, ent.pos, ent.dir))
+
+        else:
+            # set the same objects
+            for obj in self.world_objects:
+                obj_type, color, pos, dir = obj
+                if obj_type == Box:
+                    ent = self.place_entity(Box(color=color, size=0.9), pos=pos, dir=dir)
+                if obj_type == Ball:
+                    ent = self.place_entity(Ball(color=color, size=0.9), pos=pos, dir=dir)
+                if obj_type == Key:
+                    ent = self.place_entity(Key(color=color), pos=pos, dir=dir)
+                if obj_type == "agent":
+                    ent = self.place_agent(pos=pos, dir=dir)
 
         self.num_picked_up = 0
 
@@ -84,6 +104,9 @@ class PickupObjects(MiniWorldEnv, utils.EzPickle):
         obs, reward, termination, truncation, info = super().step(action)
 
         if self.agent.carrying:
+            entity_name = self.agent.carrying.mesh_name
+            print(f"{entity_name}")
+            termination = True
             self.entities.remove(self.agent.carrying)
             self.agent.carrying = None
             self.num_picked_up += 1

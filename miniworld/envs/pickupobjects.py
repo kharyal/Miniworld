@@ -80,15 +80,15 @@ class PickupObjects(MiniWorldEnv, utils.EzPickle):
                 if obj_type == Key:
                     ent = self.place_entity(Key(color=color))
 
-                self.world_objects.append((obj_type, color, ent.pos, ent.dir))
+                self.world_objects.append((obj_type, color, ent.pos, ent.dir, ent.mesh_name))
 
             ent = self.place_agent()
-            self.world_objects.append(("agent", None, ent.pos, ent.dir))
+            self.world_objects.append(("agent", None, ent.pos, ent.dir, "agent"))
 
         else:
             # set the same objects
             for obj in self.world_objects:
-                obj_type, color, pos, dir = obj
+                obj_type, color, pos, dir, _ = obj
                 if obj_type == Box:
                     ent = self.place_entity(Box(color=color, size=0.9), pos=pos, dir=dir)
                 if obj_type == Ball:
@@ -102,19 +102,20 @@ class PickupObjects(MiniWorldEnv, utils.EzPickle):
 
     def step(self, action):
         obs, reward, termination, truncation, info = super().step(action)
+        info["event"] = ""
 
         entity_name = None
         if self.agent.carrying:
             entity_name = self.agent.carrying.mesh_name
-            print(f"{entity_name}")
+            # print(f"{entity_name}")
             termination = True
             # self.entities.remove(self.agent.carrying)
             # self.agent.carrying = None
             # self.num_picked_up += 1
             # reward = 1
 
-            # if self.num_picked_up == self.num_objs:
-            #     termination = True
+            if self.num_picked_up == self.num_objs:
+                termination = True
         
         if entity_name is not None:
             info["event"] = entity_name

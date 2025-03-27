@@ -103,16 +103,20 @@ class PickupObjects(MiniWorldEnv, utils.EzPickle):
     def step(self, action):
         obs, reward, termination, truncation, info = super().step(action)
 
+        entity_name = None
         if self.agent.carrying:
             entity_name = self.agent.carrying.mesh_name
             print(f"{entity_name}")
             termination = True
-            self.entities.remove(self.agent.carrying)
-            self.agent.carrying = None
-            self.num_picked_up += 1
-            reward = 1
+            # self.entities.remove(self.agent.carrying)
+            # self.agent.carrying = None
+            # self.num_picked_up += 1
+            # reward = 1
 
-            if self.num_picked_up == self.num_objs:
-                termination = True
+            # if self.num_picked_up == self.num_objs:
+            #     termination = True
+        
+        if entity_name is not None:
+            info["event"] = entity_name
 
         return obs, reward, termination, truncation, info

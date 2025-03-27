@@ -403,6 +403,8 @@ class Box(Entity):
         self.radius = math.sqrt(sx * sx + sz * sz) / 2
         self.height = sy
 
+        self.mesh_name = f"box_{color}"
+
     def randomize(self, params, rng):
         self.color_vec = COLORS[self.color] + params.sample(rng, "obj_color_bias")
         self.color_vec = np.clip(self.color_vec, 0, 1)

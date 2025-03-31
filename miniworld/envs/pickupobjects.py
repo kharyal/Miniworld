@@ -52,6 +52,7 @@ class PickupObjects(MiniWorldEnv, utils.EzPickle):
         # Reduce the action space
         self.action_space = spaces.Discrete(self.actions.pickup + 1)
         self.world_objects = []
+        self.agent_type = "teacher"
 
 
     def _gen_world(self):
@@ -65,7 +66,8 @@ class PickupObjects(MiniWorldEnv, utils.EzPickle):
             no_ceiling=True,
         )
 
-        if len(self.world_objects) == 0:
+        if self.agent_type == "teacher":
+            self.world_objects = []
             obj_types = [Ball, Box, Key]
             colorlist = list(COLOR_NAMES)
 

@@ -480,6 +480,7 @@ class MiniWorldEnv(gym.Env):
         view: str = "agent",
     ):
         self.world_objects = []
+        self.agent_type = "teacher"
         # Action enumeration for this environment
         self.actions = MiniWorldEnv.Actions
 

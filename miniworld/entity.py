@@ -528,11 +528,11 @@ class Agent(Entity):
 
         p = self.pos + Y_VEC * self.height
         dv = self.dir_vec * self.radius
-        rv = self.right_vec * self.radius
+        rv = self.right_vec * (0.5 * self.radius)
 
-        p0 = p + dv
-        p1 = p + 0.75 * (rv - dv)
-        p2 = p + 0.75 * (-rv - dv)
+        p0 = p + (2)*dv
+        p1 = p + 1.25*(rv - dv)
+        p2 = p + 1.25*(-rv - dv)
 
         glColor3f(1, 0, 0)
         glBegin(GL_TRIANGLES)
@@ -541,14 +541,15 @@ class Agent(Entity):
         glVertex3f(*p1)
         glEnd()
 
-        """
-        glBegin(GL_LINE_STRIP)
-        for i in range(20):
-            a = (2 * math.pi * i) / 20
-            pc = p + dv * math.cos(a) + rv * math.sin(a)
-            glVertex3f(*pc)
-        glEnd()
-        """
+        # # Draw a black square at the back of the triangle
+        # glColor3f(0, 0, 0)
+        # glBegin(GL_QUADS)
+        # back_center = p - dv * 0.5
+        # glVertex3f(*(back_center + rv * 0.2 + self.dir_vec * 0.2))
+        # glVertex3f(*(back_center - rv * 0.2 + self.dir_vec * 0.2))
+        # glVertex3f(*(back_center - rv * 0.2 - self.dir_vec * 0.2))
+        # glVertex3f(*(back_center + rv * 0.2 - self.dir_vec * 0.2))
+        # glEnd()
 
     def step(self, delta_time):
         pass

@@ -2,6 +2,7 @@ import math
 from ctypes import POINTER
 from enum import IntEnum
 from typing import Optional, Tuple
+from PIL import Image
 
 import gymnasium as gym
 import numpy as np
@@ -543,6 +544,18 @@ class MiniWorldEnv(gym.Env):
         # Initialize the state
         self.reset()
 
+    def reduce_topdown_image_to_meaningful_area(self, obs):
+        obs = obs[50:550, 145:655]
+        return obs
+    
+    def downsample_image(self, img, new_size=(64, 64)):
+        """
+        Downsample the image to a new size using PIL.
+        """
+        img = Image.fromarray(img)
+        img = img.resize(new_size, Image.Resampling.LANCZOS)
+        return np.array(img)
+
     def reset(
         self, *, seed: Optional[int] = None, options: Optional[dict] = None
     ) -> Tuple[ObsType, dict]:
@@ -600,7 +613,12 @@ class MiniWorldEnv(gym.Env):
         self._render_static()
 
         # Generate the first camera image
-        obs = self.render_obs()
+        if self.view == "agent":
+            obs = self.render_obs()
+        else:
+            obs = self.render_top_view(self.vis_fb)
+            obs = self.reduce_topdown_image_to_meaningful_area(obs)
+            obs = self.downsample_image(obs, new_size=(60, 60))
 
         # Return first observation
         return obs, {}
@@ -716,7 +734,12 @@ class MiniWorldEnv(gym.Env):
             self.agent.carrying.dir = self.agent.dir
 
         # Generate the current camera image
-        obs = self.render_obs()
+        if self.view == "agent":
+            obs = self.render_obs()
+        else:
+            obs = self.render_top_view(self.vis_fb)
+            obs = self.reduce_topdown_image_to_meaningful_area(obs)
+            obs = self.downsample_image(obs, new_size=(60, 60))
 
         # If the maximum time step count is reached
         if self.step_count >= self.max_episode_steps:

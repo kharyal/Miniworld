@@ -3,6 +3,8 @@ from gymnasium import spaces, utils
 from miniworld.entity import COLOR_NAMES, Ball, Box, Key
 from miniworld.miniworld import MiniWorldEnv
 from copy import deepcopy
+from PIL import Image
+import numpy as np
 
 
 class PickupObjects(MiniWorldEnv, utils.EzPickle):

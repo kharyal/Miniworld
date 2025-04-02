@@ -472,7 +472,7 @@ class MiniWorldEnv(gym.Env):
         self,
         max_episode_steps: int = 1500,
         obs_width: int = 80,
-        obs_height: int = 60,
+        obs_height: int = 80,
         window_width: int = 800,
         window_height: int = 600,
         params=DEFAULT_PARAMS,
@@ -616,12 +616,51 @@ class MiniWorldEnv(gym.Env):
         if self.view == "agent":
             obs = self.render_obs()
         else:
-            obs = self.render_top_view(self.vis_fb)
-            obs = self.reduce_topdown_image_to_meaningful_area(obs)
-            obs = self.downsample_image(obs, new_size=(60, 60))
+            obs = self.render_agent_centered_top_view()
 
         # Return first observation
         return obs, {}
+    
+    def pad_image(self, img, new_size=(64, 64)):
+        """
+        Pad the image to a new size with zeros
+        """
+        # Create a new image with the desired size
+        padded_img = np.zeros((new_size[0], new_size[1], 3), dtype=np.uint8)
+
+        # Calculate the position to place the original image in the new image
+        start_x = (new_size[0] - img.shape[0]) // 2
+        start_y = (new_size[1] - img.shape[1]) // 2
+
+        # Place the original image in the center of the new image
+        padded_img[start_x:start_x + img.shape[0], start_y:start_y + img.shape[1]] = img
+
+        return padded_img
+    
+    def rotate_image(self, img, angle):
+        """
+        Rotate the image by a given angle
+        """
+        img = Image.fromarray(img)
+        img = img.rotate(angle, resample=Image.Resampling.NEAREST)
+        return np.array(img)
+    
+    def center_image(self, img, center):
+        """
+        Center the image around a given point
+        """
+        img = Image.fromarray(img)
+        width, height = img.size
+
+        # Calculate the new position to center the image
+        new_x = center[0] - width // 2
+        new_y = center[1] - height // 2
+
+        # Create a new image with the same size and paste the original image
+        centered_img = Image.new("RGB", (width, height))
+        centered_img.paste(img, (new_x, new_y))
+
+        return np.array(centered_img)
 
     def _get_carry_pos(self, agent_pos, ent):
         """
@@ -737,9 +776,7 @@ class MiniWorldEnv(gym.Env):
         if self.view == "agent":
             obs = self.render_obs()
         else:
-            obs = self.render_top_view(self.vis_fb)
-            obs = self.reduce_topdown_image_to_meaningful_area(obs)
-            obs = self.downsample_image(obs, new_size=(60, 60))
+            obs = self.render_agent_centered_top_view()
 
         # If the maximum time step count is reached
         if self.step_count >= self.max_episode_steps:
@@ -1198,6 +1235,62 @@ class MiniWorldEnv(gym.Env):
             return self._render_world(frame_buffer, render_agent=render_agent), scale
         else:
             return self._render_world(frame_buffer, render_agent=render_agent)
+
+    def render_agent_centered_top_view(self, frame_buffer=None):
+        """
+        Render a bird's-eye view of the environment centered around the agent
+        and rotated according to the agent's direction.
+        """
+        if frame_buffer is None:
+            frame_buffer = self.obs_fb
+
+        # Switch to the default OpenGL context
+        self.shadow_window.switch_to()
+
+        # Bind the frame buffer before rendering into it
+        frame_buffer.bind()
+
+        # Clear the color and depth buffers
+        glClearColor(*self.sky_color, 1.0)
+        glClearDepth(1.0)
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
+        # Set the projection matrix for a closer view
+        glMatrixMode(GL_PROJECTION)
+        glLoadIdentity()
+        closer_view_range = 7  # Adjust this value to control the zoom level
+        glOrtho(
+            -closer_view_range, closer_view_range,
+            -closer_view_range, closer_view_range,
+            -100, 100.0
+        )
+
+        # Setup the camera centered on the agent
+        glMatrixMode(GL_MODELVIEW)
+        glLoadIdentity()
+
+        # Compute the "up vector" to avoid skewing
+        up_x = self.agent.dir_vec[0]
+        up_z = self.agent.dir_vec[2]
+
+        gluLookAt(
+            # Eye position (centered on the agent)
+            self.agent.pos[0], self.agent.pos[1] + 3, self.agent.pos[2],
+            # Target (looking down at the agent)
+            self.agent.pos[0], self.agent.pos[1], self.agent.pos[2],
+            # Up vector (aligned with the agent's direction)
+            up_x, 0, up_z
+        )
+
+        # Render the world
+        img = self._render_world(frame_buffer, render_agent=True)
+
+        # Rotate the image to align with the agent's direction
+        # img = Image.fromarray(img)
+        # img = img.rotate(-self.agent.dir * 180 / math.pi, resample=Image.Resampling.BICUBIC)
+        # img = img.resize(view_size, Image.Resampling.LANCZOS)
+
+        return np.array(img)
 
     def render_obs(self, frame_buffer=None):
         """

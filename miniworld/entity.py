@@ -530,9 +530,9 @@ class Agent(Entity):
         dv = self.dir_vec * self.radius
         rv = self.right_vec * (0.5 * self.radius)
 
-        p0 = p + (2)*dv
-        p1 = p + 1.25*(rv - dv)
-        p2 = p + 1.25*(-rv - dv)
+        p0 = p + dv
+        p1 = p + 0.75*(rv - dv)
+        p2 = p + 0.75*(-rv - dv)
 
         glColor3f(1, 0, 0)
         glBegin(GL_TRIANGLES)

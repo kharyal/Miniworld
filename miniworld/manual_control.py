@@ -2,6 +2,7 @@ import math
 
 import pyglet
 from pyglet.window import key
+import matplotlib.pyplot as plt
 
 
 class ManualControl:
@@ -12,6 +13,9 @@ class ManualControl:
             self.env.max_episode_steps = math.inf
         if domain_rand:
             self.env.domain_rand = True
+
+        self.f, self.ax = plt.subplots()
+        plt.show(block=False)
 
     def run(self):
         print("============")
@@ -81,6 +85,10 @@ class ManualControl:
         )
 
         obs, reward, termination, truncation, info = self.env.step(action)
+
+        plt.imshow(obs)
+        plt.pause(0.01)
+        self.ax.cla()
 
         if reward > 0:
             print(f"reward={reward:.2f}")

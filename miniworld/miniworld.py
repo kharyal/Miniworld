@@ -544,17 +544,8 @@ class MiniWorldEnv(gym.Env):
         # Initialize the state
         self.reset()
 
-    def reduce_topdown_image_to_meaningful_area(self, obs):
-        obs = obs[50:550, 145:655]
-        return obs
-    
-    def downsample_image(self, img, new_size=(64, 64)):
-        """
-        Downsample the image to a new size using PIL.
-        """
-        img = Image.fromarray(img)
-        img = img.resize(new_size, Image.Resampling.LANCZOS)
-        return np.array(img)
+    def rgb2gray(self, rgb):
+        return np.dot(rgb[...,:3], [0.2989, 0.5870, 0.1140])
 
     def reset(
         self, *, seed: Optional[int] = None, options: Optional[dict] = None
@@ -616,7 +607,7 @@ class MiniWorldEnv(gym.Env):
         if self.view == "agent":
             obs = self.render_obs()
         else:
-            obs = self.render_agent_centered_top_view()
+            obs = self.rgb2gray(self.render_agent_centered_top_view())
 
         # Return first observation
         return obs, {}
@@ -776,7 +767,7 @@ class MiniWorldEnv(gym.Env):
         if self.view == "agent":
             obs = self.render_obs()
         else:
-            obs = self.render_agent_centered_top_view()
+            obs = self.rgb2gray(self.render_agent_centered_top_view())
 
         # If the maximum time step count is reached
         if self.step_count >= self.max_episode_steps:

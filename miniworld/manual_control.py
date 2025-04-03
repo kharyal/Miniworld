@@ -3,6 +3,7 @@ import math
 import pyglet
 from pyglet.window import key
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 class ManualControl:
@@ -86,7 +87,7 @@ class ManualControl:
 
         obs, reward, termination, truncation, info = self.env.step(action)
 
-        plt.imshow(obs)
+        plt.imshow(obs, cmap="gray")
         plt.pause(0.01)
         self.ax.cla()
 
@@ -98,3 +99,7 @@ class ManualControl:
             self.env.reset()
 
         self.env.render()
+
+# green = 149.7
+# red = 76.2
+# blue = 58.8

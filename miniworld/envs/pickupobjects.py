@@ -48,7 +48,7 @@ class PickupObjects(MiniWorldEnv, utils.EzPickle):
         self.size = size
         self.num_objs = num_objs
 
-        MiniWorldEnv.__init__(self, max_episode_steps=400, **kwargs)
+        MiniWorldEnv.__init__(self, max_episode_steps=250, **kwargs)
         utils.EzPickle.__init__(self, size, num_objs, **kwargs)
 
         # Reduce the action space
@@ -114,9 +114,9 @@ class PickupObjects(MiniWorldEnv, utils.EzPickle):
             # print(f"{entity_name}")
             termination = True
             # self.entities.remove(self.agent.carrying)
-            # self.agent.carrying = None
+            self.agent.carrying = None
             # self.num_picked_up += 1
-            # reward = 1
+            reward = 1
 
             if self.num_picked_up == self.num_objs:
                 termination = True

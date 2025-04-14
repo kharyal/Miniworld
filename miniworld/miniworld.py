@@ -607,7 +607,8 @@ class MiniWorldEnv(gym.Env):
         if self.view == "agent":
             obs = self.render_obs()
         else:
-            obs = self.rgb2gray(self.render_agent_centered_top_view())
+            obs = self.render_agent_centered_top_view()
+            # obs = self.rgb2gray(self.render_agent_centered_top_view())
             # obs = self.rgb2gray(self.render_top_view_obs())
 
         # Return first observation
@@ -768,7 +769,8 @@ class MiniWorldEnv(gym.Env):
         if self.view == "agent":
             obs = self.render_obs()
         else:
-            obs = self.rgb2gray(self.render_agent_centered_top_view())
+            obs = self.render_agent_centered_top_view()
+            # obs = self.rgb2gray(self.render_agent_centered_top_view())
             # obs = self.rgb2gray(self.render_top_view_obs())
 
         # If the maximum time step count is reached

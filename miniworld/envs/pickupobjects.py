@@ -72,6 +72,7 @@ class PickupObjects(MiniWorldEnv, utils.EzPickle):
             self.world_objects = []
             obj_types = [Ball, Box, Key]
             colorlist = list(COLOR_NAMES)
+            colorlist = ["green"]
 
             for obj in range(self.num_objs):
                 obj_type = obj_types[self.np_random.choice(len(obj_types))]
@@ -122,6 +123,6 @@ class PickupObjects(MiniWorldEnv, utils.EzPickle):
                 termination = True
         
         if entity_name is not None:
-            info["event"] = entity_name
+            info["event"] = entity_name.split("_")[0]
 
         return obs, reward, termination, truncation, info
